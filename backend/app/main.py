@@ -1,57 +1,63 @@
-from dotenv import load_dotenv
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv()
+from .data import PATIENTS
+from .pipeline.graph import pipeline
 
-from .data import PATIENTS, get_patient
-from .llm import run_pipeline
-from .models import AnalyzeResponse, PatientDetail, PatientListItem
+app = FastAPI(title="AI-Assisted Clinical Report Summarization System")
 
-app = FastAPI(title="Clinical Report Summarizer")
-
+# Wide open for local development. Restrict allow_origins before this ever
+# runs anywhere other than your own machine.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Simple in-memory cache so re-viewing a patient doesn't re-run the LLM pipeline.
-_analysis_cache: dict[str, AnalyzeResponse] = {}
+
+def _find_patient(patient_id: str):
+    return next((p for p in PATIENTS if p["id"] == patient_id), None)
 
 
-@app.get("/patients", response_model=list[PatientListItem])
+@app.get("/patients")
 def list_patients():
-    return [{"id": p["id"], "name": p["name"], "source": p.get("source")} for p in PATIENTS]
+    return PATIENTS
 
 
-@app.get("/patients/{patient_id}", response_model=PatientDetail)
-def get_patient_detail(patient_id: str):
-    patient = get_patient(patient_id)
-    if patient is None:
+@app.get("/patients/{patient_id}")
+def get_patient(patient_id: str):
+    patient = _find_patient(patient_id)
+    if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
 
 
-@app.post("/patients/{patient_id}/analyze", response_model=AnalyzeResponse)
+@app.post("/patients/{patient_id}/analyze")
 def analyze_patient(patient_id: str):
-    patient = get_patient(patient_id)
-    if patient is None:
+    patient = _find_patient(patient_id)
+    if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
-    if patient_id in _analysis_cache:
-        return _analysis_cache[patient_id]
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise HTTPException(
+            status_code=500,
+            detail="ANTHROPIC_API_KEY is not set. Add it to backend/.env and restart the server.",
+        )
 
-    try:
-        result = run_pipeline(patient)
-    except Exception as exc:  # surfaced as a clean 500 rather than a stack trace to the frontend
-        raise HTTPException(status_code=500, detail=str(exc))
+    initial_state = {
+        "patient_id": patient["id"],
+        "patient_name": patient["name"],
+        "visits": patient["visits"],
+    }
+    result = pipeline.invoke(initial_state)
 
-    _analysis_cache[patient_id] = result
-    return result
-
-
-@app.get("/")
-def root():
-    return {"status": "ok", "service": "clinical-report-summarizer"}
+    return {
+        "summary": result.get("summary"),
+        "timeline": result.get("timeline"),
+        "timeline_graph": result.get("timeline_graph"),
+        "flags": result.get("flags"),
+        "care_gaps": result.get("care_gaps"),
+    }

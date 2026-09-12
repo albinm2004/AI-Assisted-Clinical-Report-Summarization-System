@@ -1,3 +1,0 @@
-# Only needed for scripts/fetch_real_patients.py -- not a runtime dependency
-# of the app itself, so it's kept out of the main requirements.txt.
-datasets>=2.19
