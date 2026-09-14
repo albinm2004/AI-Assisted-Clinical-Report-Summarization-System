@@ -36,8 +36,21 @@ Orchestrated with LangGraph (`backend/app/pipeline/graph.py`) so the stages are 
 - `backend/tests/test_pipeline.py` - two tests, both passing: the full six-stage pipeline runs end to end with a mocked LLM and produces correctly-shaped output, and the verification stage correctly marks a fabricated claim as `unsupported` rather than passing it through.
 - The FastAPI app boots and every route was exercised directly (`/patients`, `/patients/{id}`, `/patients/{id}/analyze`), including a full end-to-end `/analyze` call run against a simulated Ollama server returning realistic per-stage responses - confirmed all six stages, the grounding check, and the JSON shape returned to the frontend are correct. Also confirmed the endpoint fails with a clear `503` message (rather than a raw crash) when Ollama isn't reachable or the model hasn't been pulled.
 - The frontend was installed (`npm install`) and built for production (`npm run build`) successfully.
+- Run end to end against a real, locally-installed Ollama model (`llama3.1:8b`): the full six-stage pipeline executes live and produces a correct clinical summary, visit timeline, grounded flagged findings, and a care gap, all rendered in the dashboard UI. Screenshots below.
 
-What hasn't been tested here: a run against a real, locally-installed Ollama model, since that needs to happen on your own machine. The request/response handling in `backend/app/pipeline/llm.py` is confirmed correct against Ollama's actual API shape - the first real local run is the one thing left to do.
+## App preview
+
+**Login**
+
+![Login screen](docs/screenshots/login.png)
+
+**Dashboard**
+
+![Patient dashboard](docs/screenshots/dashboard.png)
+
+**Clinical report**
+
+![Generated clinical report](docs/screenshots/report.png)
 
 ## Running it
 
@@ -97,6 +110,8 @@ frontend/
     App.jsx                Dashboard - sidebar nav, KPIs, chart, patient detail
     main.jsx, index.css
   package.json
+docs/
+  screenshots/            App preview images used above
 ```
 
 ## Extending this
