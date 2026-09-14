@@ -15,6 +15,9 @@ import {
   Activity,
   Printer,
   FileText,
+  Lock,
+  LogOut,
+  User,
 } from "lucide-react";
 import {
   BarChart,
@@ -27,6 +30,13 @@ import {
 } from "recharts";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+// Demo-only login gate. There's no backend user store behind this - it's a
+// client-side check so the app has a real login/logout flow to demo, not a
+// production auth system. Swap this for a real backend auth call before
+// this ever holds real patient data.
+const AUTH_STORAGE_KEY = "medicity_auth_user";
+const DEMO_USER = { username: "doctor", password: "medicity2026", displayName: "Dr. on Duty" };
 
 const CONFIDENCE_STYLES = {
   grounded: { label: "Grounded", color: "#2E6B5E", bg: "#E7F0EA" },
@@ -223,6 +233,155 @@ function EntityCategory({ label, Icon, color, bg, items }) {
   );
 }
 
+// --- Login ------------------------------------------------------------------
+
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    // Simulated network delay so the login feels real rather than instant.
+    setTimeout(() => {
+      if (username.trim() === DEMO_USER.username && password === DEMO_USER.password) {
+        onLogin(username.trim());
+      } else {
+        setError("Incorrect username or password.");
+      }
+      setSubmitting(false);
+    }, 350);
+  }
+
+  return (
+    <div
+      style={{
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        background: colors.paper,
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <style>{`.cns-serif { font-family: 'Source Serif 4', serif; }`}</style>
+      <div style={{ width: "100%", maxWidth: "380px" }}>
+        <div style={{ textAlign: "center", marginBottom: "22px" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 46,
+              height: 46,
+              borderRadius: "10px",
+              background: colors.tealTint,
+              color: colors.tealDeep,
+              marginBottom: "12px",
+            }}
+          >
+            <Stethoscope size={22} />
+          </span>
+          <h1 className="cns-serif" style={{ fontSize: "22px", fontWeight: 600, color: colors.ink }}>
+            MediCity
+          </h1>
+          <p style={{ fontSize: "13px", color: colors.muted, marginTop: "2px" }}>Chart Review &middot; Bengaluru</p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "10px", padding: "26px" }}
+        >
+          <h2 className="cns-serif" style={{ fontSize: "16px", fontWeight: 600, marginBottom: "4px" }}>
+            Sign in
+          </h2>
+          <p style={{ fontSize: "12.5px", color: colors.muted, marginBottom: "18px" }}>
+            Enter your credentials to access the chart review dashboard.
+          </p>
+
+          <label style={{ display: "block", fontSize: "12px", color: colors.muted, marginBottom: "5px" }}>Username</label>
+          <div style={{ position: "relative", marginBottom: "14px" }}>
+            <User size={15} style={{ position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)", color: colors.faint }} />
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="doctor"
+              autoFocus
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "9px 12px 9px 34px",
+                fontSize: "13.5px",
+                border: `1px solid ${colors.line}`,
+                borderRadius: "6px",
+                outline: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+
+          <label style={{ display: "block", fontSize: "12px", color: colors.muted, marginBottom: "5px" }}>Password</label>
+          <div style={{ position: "relative", marginBottom: "6px" }}>
+            <Lock size={15} style={{ position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)", color: colors.faint }} />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "9px 12px 9px 34px",
+                fontSize: "13.5px",
+                border: `1px solid ${colors.line}`,
+                borderRadius: "6px",
+                outline: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+
+          {error && <p style={{ color: colors.rust, fontSize: "12.5px", marginTop: "8px" }}>{error}</p>}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              width: "100%",
+              marginTop: "18px",
+              background: colors.teal,
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: "6px",
+              padding: "10px 16px",
+              fontSize: "13.5px",
+              fontWeight: 500,
+              cursor: submitting ? "default" : "pointer",
+              opacity: submitting ? 0.8 : 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "7px",
+            }}
+          >
+            {submitting && <Loader2 size={14} className="animate-spin" />}
+            {submitting ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", fontSize: "11.5px", color: colors.faint, marginTop: "16px" }}>
+          Demo credentials: <strong>doctor</strong> / <strong>medicity2026</strong>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // --- Printable lab-style report -------------------------------------------
 // A self-contained, print-friendly rendering of one patient's analysis -
 // letterhead, patient info block, and the same underlying data as the
@@ -321,7 +480,7 @@ function ReportView({ patient, result, onBack }) {
       >
         <div style={{ textAlign: "center", borderBottom: "2px solid #1A1A1A", paddingBottom: "14px", marginBottom: "22px" }}>
           <p className="cns-serif" style={{ fontSize: "19px", fontWeight: 700, letterSpacing: "0.3px" }}>
-            Sri Chaitanya Multispeciality Hospital
+            MediCity Hospital
           </p>
           <p style={{ fontSize: "11px", color: "#555555", marginTop: "2px" }}>
             Bengaluru, Karnataka &middot; Department of Medicine
@@ -458,6 +617,14 @@ function ReportView({ patient, result, onBack }) {
 }
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return localStorage.getItem(AUTH_STORAGE_KEY) || null;
+    } catch {
+      return null;
+    }
+  });
+
   const [patients, setPatients] = useState([]);
   const [patientsError, setPatientsError] = useState(null);
   const [patientsLoading, setPatientsLoading] = useState(true);
@@ -470,7 +637,28 @@ export default function App() {
   const [errors, setErrors] = useState({});
   const [lastAnalyzed, setLastAnalyzed] = useState(null);
 
+  function handleLogin(username) {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, username);
+    } catch {
+      // localStorage can be unavailable (private browsing, blocked cookies);
+      // the session still works, it just won't survive a refresh.
+    }
+    setCurrentUser(username);
+  }
+
+  function handleLogout() {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      /* see note above */
+    }
+    setCurrentUser(null);
+    setView("overview");
+  }
+
   useEffect(() => {
+    if (!currentUser) return;
     fetch(`${API_BASE}/patients`)
       .then((res) => {
         if (!res.ok) throw new Error("Request failed");
@@ -486,7 +674,7 @@ export default function App() {
         );
       })
       .finally(() => setPatientsLoading(false));
-  }, []);
+  }, [currentUser]);
 
   const activePatient = patients.find((p) => p.id === activePatientId);
   const activeResult = activePatientId ? results[activePatientId] : null;
@@ -530,6 +718,10 @@ export default function App() {
     setActivePatientId(id);
     setActiveVisitIndex(0);
     setView("patient");
+  }
+
+  if (!currentUser) {
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   if (patientsError) {
@@ -618,7 +810,7 @@ export default function App() {
             <div className="flex items-center gap-2" style={{ marginBottom: "4px" }}>
               <Stethoscope size={17} style={{ color: "#7FB3A3" }} />
               <span className="cns-serif" style={{ fontSize: "14.5px", fontWeight: 600, letterSpacing: "0.2px" }}>
-                Sri Chaitanya Multispeciality
+                MediCity
               </span>
             </div>
             <p style={{ fontSize: "11px", color: colors.sidebarMuted, paddingLeft: "24px" }}>
@@ -701,8 +893,51 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ marginTop: "auto", paddingTop: "16px" }}>
-            <p style={{ fontSize: "11px", color: "#5C6B67" }}>Demo data only</p>
+          <div style={{ marginTop: "auto", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.09)" }}>
+            <div className="flex items-center gap-2" style={{ padding: "6px 6px 10px 6px" }}>
+              <span
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: "50%",
+                  background: "rgba(127,179,163,0.18)",
+                  color: "#9FD4C0",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <User size={13} />
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: "12px", color: "#FFFFFF", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {currentUser}
+                </p>
+                <p style={{ fontSize: "10.5px", color: "#5C6B67" }}>Demo data only</p>
+              </div>
+            </div>
+            <button
+              className="cns-navbtn cns-focus"
+              onClick={handleLogout}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                width: "100%",
+                padding: "7px 8px",
+                borderRadius: "6px",
+                background: "none",
+                border: "none",
+                color: colors.sidebarMuted,
+                fontSize: "12.5px",
+                cursor: "pointer",
+                textAlign: "left",
+              }}
+            >
+              <LogOut size={14} />
+              Log out
+            </button>
           </div>
         </div>
 

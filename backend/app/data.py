@@ -12,7 +12,7 @@ PATIENTS = [
             {
                 "date": "Aug 2, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "K/C/O: Hypertension, on treatment.\n\n"
                     "C/O: intermittent central chest tightness x 3 days.\n\n"
                     "History: 58-year-old male presents with episodic substernal "
@@ -31,7 +31,7 @@ PATIENTS = [
             {
                 "date": "Aug 9, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "F/U after TMT.\n\n"
                     "TMT report: mild inferior wall hypoperfusion, significance "
                     "uncertain; overall read as low-risk study. Patient reports no "
@@ -50,7 +50,7 @@ PATIENTS = [
             {
                 "date": "Jun 14, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "K/C/O: Type 2 Diabetes Mellitus.\n\n"
                     "C/O: routine follow-up, T2DM.\n\n"
                     "History: 46-year-old female here for scheduled diabetes review. "
@@ -69,7 +69,7 @@ PATIENTS = [
             {
                 "date": "Sep 20, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "C/O: routine follow-up, T2DM.\n\n"
                     "History: reports continued compliance with Glycomet, no new "
                     "complaints. Fundus exam still not done - reports difficulty "
@@ -88,7 +88,7 @@ PATIENTS = [
             {
                 "date": "Jul 20, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "POD 10 after laparoscopic cholecystectomy.\n\n"
                     "Port site wounds healing well, no signs of infection. Mild "
                     "intermittent right hypochondrium discomfort, tolerable. Denies "
@@ -100,7 +100,7 @@ PATIENTS = [
             {
                 "date": "Aug 24, 2026",
                 "text": (
-                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "MediCity Hospital, Bengaluru - OPD Case Sheet\n\n"
                     "F/U after laparoscopic cholecystectomy.\n\n"
                     "Reports occasional right hypochondrium discomfort, milder than "
                     "before. No fever, no jaundice. Follow-up USG was not scheduled due "
