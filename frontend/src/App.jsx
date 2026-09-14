@@ -6,6 +6,15 @@ import {
   AlertTriangle,
   ShieldAlert,
   Loader2,
+  Users,
+  Flag,
+  ClipboardList,
+  HeartPulse,
+  Pill,
+  FlaskConical,
+  Activity,
+  Printer,
+  FileText,
 } from "lucide-react";
 import {
   BarChart,
@@ -20,10 +29,72 @@ import {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const CONFIDENCE_STYLES = {
-  grounded: { label: "Grounded", color: "#2E6B5E", bg: "#E7F0EC" },
-  partially_grounded: { label: "Partially grounded", color: "#B8842E", bg: "#F7EFE0" },
-  unsupported: { label: "Needs review", color: "#A8442C", bg: "#F6E9E5" },
+  grounded: { label: "Grounded", color: "#2E6B5E", bg: "#E7F0EA" },
+  partially_grounded: { label: "Partially grounded", color: "#9C6B1F", bg: "#F5EBD8" },
+  unsupported: { label: "Needs review", color: "#A8442C", bg: "#F5E6E1" },
 };
+
+const colors = {
+  ink: "#1C2624",
+  paper: "#F3F1E8",
+  panel: "#FFFFFF",
+  line: "#DED8C7",
+  hairline: "#EAE5D6",
+  teal: "#2E6B5E",
+  tealDeep: "#1E4F44",
+  tealTint: "#E7F0EA",
+  rust: "#A8442C",
+  rustBg: "#F5E6E1",
+  amber: "#9C6B1F",
+  amberBg: "#F5EBD8",
+  slate: "#3E5C76",
+  slateBg: "#E8EDF2",
+  muted: "#5B6763",
+  faint: "#8B948F",
+  sidebarMuted: "#9FAFA9",
+};
+
+// Config for the four entity-extraction categories every visit is broken
+// into by the first pipeline stage. Each gets its own icon/tint so the
+// "Extracted entities" panel reads as a quick-scan dashboard rather than
+// a wall of text.
+const ENTITY_CATEGORIES = [
+  { key: "diagnoses", label: "Diagnoses", icon: HeartPulse, color: colors.teal, bg: colors.tealTint },
+  { key: "medications", label: "Medications", icon: Pill, color: colors.slate, bg: colors.slateBg },
+  { key: "labs", label: "Labs", icon: FlaskConical, color: colors.amber, bg: colors.amberBg },
+  { key: "key_findings", label: "Key findings", icon: Activity, color: colors.rust, bg: colors.rustBg },
+];
+
+function initialsOf(name) {
+  const parts = name.replace(".", "").trim().split(/\s+/);
+  return parts.map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function Seal({ name, size = 34, tone = "teal" }) {
+  const bg = tone === "rust" ? colors.rustBg : colors.tealTint;
+  const fg = tone === "rust" ? colors.rust : colors.tealDeep;
+  return (
+    <span
+      className="cns-serif"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: bg,
+        color: fg,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: size * 0.36,
+        fontWeight: 600,
+        flexShrink: 0,
+        border: `1px solid ${tone === "rust" ? colors.rust : colors.teal}33`,
+      }}
+    >
+      {initialsOf(name)}
+    </span>
+  );
+}
 
 function StatusDot({ color }) {
   return (
@@ -37,6 +108,352 @@ function StatusDot({ color }) {
         flexShrink: 0,
       }}
     />
+  );
+}
+
+function StatCard({ icon: Icon, label, value, tone }) {
+  const tint = tone === "rust" ? colors.rustBg : tone === "amber" ? colors.amberBg : colors.tealTint;
+  const fg = tone === "rust" ? colors.rust : tone === "amber" ? colors.amber : colors.teal;
+  return (
+    <div
+      style={{
+        background: colors.panel,
+        border: `1px solid ${colors.line}`,
+        borderRadius: "8px",
+        padding: "16px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: "14px",
+      }}
+    >
+      <span
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: "8px",
+          background: tint,
+          color: fg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={17} />
+      </span>
+      <div>
+        <p style={{ fontSize: "12px", color: colors.muted, marginBottom: "3px" }}>{label}</p>
+        <p className="cns-serif" style={{ fontSize: "22px", fontWeight: 600, lineHeight: 1 }}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SectionHeading({ children, count }) {
+  return (
+    <h2
+      className="cns-serif"
+      style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}
+    >
+      {children}
+      {count != null && (
+        <span
+          style={{
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontWeight: 500,
+            fontSize: "11px",
+            color: colors.muted,
+            background: colors.hairline,
+            borderRadius: "999px",
+            padding: "1px 8px",
+          }}
+        >
+          {count}
+        </span>
+      )}
+    </h2>
+  );
+}
+
+function EntityCategory({ label, Icon, color, bg, items }) {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "7px" }}>
+        <span
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: "6px",
+            background: bg,
+            color,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon size={12} />
+        </span>
+        <span style={{ fontSize: "12px", fontWeight: 500, color: colors.ink }}>{label}</span>
+      </div>
+      {items?.length ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {items.map((item, i) => (
+            <span
+              key={i}
+              style={{
+                fontSize: "12px",
+                color: colors.ink,
+                background: colors.paper,
+                border: `1px solid ${colors.line}`,
+                borderRadius: "999px",
+                padding: "3px 10px",
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p style={{ fontSize: "12px", color: colors.faint, fontStyle: "italic" }}>None noted</p>
+      )}
+    </div>
+  );
+}
+
+// --- Printable lab-style report -------------------------------------------
+// A self-contained, print-friendly rendering of one patient's analysis -
+// letterhead, patient info block, and the same underlying data as the
+// dashboard, laid out the way a diagnostic/lab report reads: dense,
+// black-on-white, sectioned with rules, ending in a sign-off line.
+
+function ReportSection({ title, children, last }) {
+  return (
+    <div style={{ marginBottom: last ? 0 : "20px" }}>
+      <p
+        style={{
+          fontSize: "11px",
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.6px",
+          color: "#333333",
+          borderBottom: "1px solid #1a1a1a",
+          paddingBottom: "4px",
+          marginBottom: "10px",
+        }}
+      >
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function ReportField({ label, value }) {
+  if (!value) return null;
+  return (
+    <p style={{ fontSize: "12.5px", marginBottom: "6px", lineHeight: 1.5 }}>
+      <span style={{ color: "#555555", fontWeight: 600 }}>{label}: </span>
+      {value}
+    </p>
+  );
+}
+
+function ReportListField({ label, items }) {
+  return (
+    <div style={{ marginBottom: "4px" }}>
+      <span style={{ fontWeight: 600, color: "#333333" }}>{label}: </span>
+      <span>{items?.length ? items.join(", ") : "—"}</span>
+    </div>
+  );
+}
+
+function ReportView({ patient, result, onBack }) {
+  const generatedAt = useMemo(() => new Date(), []);
+  const firstVisit = patient.visits[0]?.date;
+  const lastVisit = patient.visits[patient.visits.length - 1]?.date;
+  const reportId = `${patient.id.toUpperCase()}-${generatedAt.getTime().toString().slice(-6)}`;
+
+  return (
+    <div>
+      <div className="no-print flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: "16px" }}>
+        <button
+          className="cns-focus"
+          onClick={onBack}
+          style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: colors.muted, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+        >
+          <ChevronLeft size={14} />
+          Back to chart
+        </button>
+        <button
+          className="cns-btn cns-focus"
+          onClick={() => window.print()}
+          style={{
+            background: colors.teal,
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: "6px",
+            padding: "9px 16px",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "7px",
+          }}
+        >
+          <Printer size={14} />
+          Print / Save as PDF
+        </button>
+      </div>
+
+      <div
+        className="cns-report-sheet"
+        style={{
+          background: "#FFFFFF",
+          border: `1px solid ${colors.line}`,
+          borderRadius: "4px",
+          padding: "40px 48px",
+          color: "#1A1A1A",
+        }}
+      >
+        <div style={{ textAlign: "center", borderBottom: "2px solid #1A1A1A", paddingBottom: "14px", marginBottom: "22px" }}>
+          <p className="cns-serif" style={{ fontSize: "19px", fontWeight: 700, letterSpacing: "0.3px" }}>
+            Sri Chaitanya Multispeciality Hospital
+          </p>
+          <p style={{ fontSize: "11px", color: "#555555", marginTop: "2px" }}>
+            Bengaluru, Karnataka &middot; Department of Medicine
+          </p>
+          <p
+            className="cns-serif"
+            style={{ fontSize: "13.5px", fontWeight: 600, marginTop: "12px", textTransform: "uppercase", letterSpacing: "1px" }}
+          >
+            AI-Assisted Clinical Summary Report
+          </p>
+        </div>
+
+        <table style={{ width: "100%", fontSize: "12.5px", marginBottom: "22px", borderCollapse: "collapse" }}>
+          <tbody>
+            <tr>
+              <td style={{ padding: "3px 0", color: "#555555", width: "18%" }}>Patient name</td>
+              <td style={{ padding: "3px 0", fontWeight: 600, width: "32%" }}>{patient.name}</td>
+              <td style={{ padding: "3px 0", color: "#555555", width: "18%" }}>Report ID</td>
+              <td style={{ padding: "3px 0" }}>{reportId}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: "3px 0", color: "#555555" }}>Visits reviewed</td>
+              <td style={{ padding: "3px 0" }}>
+                {patient.visits.length} ({firstVisit} to {lastVisit})
+              </td>
+              <td style={{ padding: "3px 0", color: "#555555" }}>Generated</td>
+              <td style={{ padding: "3px 0" }}>{generatedAt.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ReportSection title="Clinical Summary">
+          <ReportField label="Chief complaint" value={result.summary?.chief_complaint} />
+          <ReportField label="Findings" value={result.summary?.findings} />
+          <ReportField label="Plan" value={result.summary?.plan} />
+        </ReportSection>
+
+        <ReportSection title="Visit-wise Extracted Findings">
+          {patient.visits.map((v, i) => {
+            const ex = result.extracted?.[i];
+            const isLast = i === patient.visits.length - 1;
+            return (
+              <div
+                key={v.date}
+                style={{
+                  marginBottom: isLast ? 0 : "14px",
+                  paddingBottom: isLast ? 0 : "14px",
+                  borderBottom: isLast ? "none" : "1px solid #E5E5E5",
+                }}
+              >
+                <p style={{ fontSize: "12px", fontWeight: 600, marginBottom: "5px" }}>{v.date}</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 20px", fontSize: "12px" }}>
+                  <ReportListField label="Diagnoses" items={ex?.diagnoses} />
+                  <ReportListField label="Medications" items={ex?.medications} />
+                  <ReportListField label="Labs" items={ex?.labs} />
+                  <ReportListField label="Key findings" items={ex?.key_findings} />
+                </div>
+              </div>
+            );
+          })}
+        </ReportSection>
+
+        <ReportSection title="Visit Timeline">
+          <ol style={{ paddingLeft: "18px", fontSize: "12.5px", margin: 0 }}>
+            {result.timeline?.map((t, i) => (
+              <li key={i} style={{ marginBottom: "4px" }}>
+                <strong>{t.date}:</strong> {t.summary}
+              </li>
+            ))}
+          </ol>
+        </ReportSection>
+
+        <ReportSection title="Flagged Findings">
+          {result.flags?.length ? (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+              <thead>
+                <tr>
+                  {["Finding", "Reason", "Source excerpt", "Visit", "Status"].map((h) => (
+                    <th key={h} style={{ textAlign: "left", borderBottom: "1px solid #999999", padding: "4px 6px", fontWeight: 600 }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {result.flags.map((f, i) => (
+                  <tr key={i}>
+                    <td style={{ padding: "5px 6px", borderBottom: "1px solid #EEEEEE", fontWeight: 600, verticalAlign: "top" }}>{f.finding}</td>
+                    <td style={{ padding: "5px 6px", borderBottom: "1px solid #EEEEEE", verticalAlign: "top" }}>{f.reason}</td>
+                    <td style={{ padding: "5px 6px", borderBottom: "1px solid #EEEEEE", fontStyle: "italic", verticalAlign: "top" }}>
+                      &ldquo;{f.source_excerpt}&rdquo;
+                    </td>
+                    <td style={{ padding: "5px 6px", borderBottom: "1px solid #EEEEEE", verticalAlign: "top", whiteSpace: "nowrap" }}>{f.visit_date}</td>
+                    <td style={{ padding: "5px 6px", borderBottom: "1px solid #EEEEEE", verticalAlign: "top", whiteSpace: "nowrap" }}>
+                      {(CONFIDENCE_STYLES[f.confidence] || CONFIDENCE_STYLES.unsupported).label}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ fontSize: "12.5px", color: "#555555" }}>No findings flagged for closer attention.</p>
+          )}
+        </ReportSection>
+
+        <ReportSection title="Care Gaps" last>
+          {result.care_gaps?.length ? (
+            <ul style={{ paddingLeft: "18px", fontSize: "12.5px", margin: 0 }}>
+              {result.care_gaps.map((g, i) => (
+                <li key={i} style={{ marginBottom: "4px" }}>
+                  <strong>{g.gap}:</strong> {g.reason}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ fontSize: "12.5px", color: "#555555" }}>No care gaps identified.</p>
+          )}
+        </ReportSection>
+
+        <div style={{ marginTop: "30px", paddingTop: "14px", borderTop: "1px solid #CCCCCC", fontSize: "10.5px", color: "#777777" }}>
+          <p>
+            This report was generated by an AI-assisted summarization pipeline from the visit notes on file. It is
+            intended to support, not replace, clinical review. Every flagged finding above has been checked against
+            the source note for grounding before being shown here.
+          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "26px", fontSize: "11px", color: "#333333" }}>
+            <p>Reviewed by: ______________________</p>
+            <p>Date: ______________</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -73,6 +490,7 @@ export default function App() {
 
   const activePatient = patients.find((p) => p.id === activePatientId);
   const activeResult = activePatientId ? results[activePatientId] : null;
+  const activeExtracted = activeResult?.extracted?.[activeVisitIndex];
 
   const analyzedCount = Object.keys(results).length;
   const kpis = useMemo(() => {
@@ -113,20 +531,6 @@ export default function App() {
     setActiveVisitIndex(0);
     setView("patient");
   }
-
-  const colors = {
-    ink: "#1C2624",
-    paper: "#F2F4F1",
-    panel: "#FFFFFF",
-    line: "#D6DBD6",
-    teal: "#2E6B5E",
-    rust: "#A8442C",
-    rustBg: "#F6E9E5",
-    amber: "#B8842E",
-    amberBg: "#F7EFE0",
-    muted: "#4C5A56",
-    sidebarMuted: "#9FB0AC",
-  };
 
   if (patientsError) {
     return (
@@ -173,20 +577,27 @@ export default function App() {
         .cns-navbtn { transition: background-color 120ms ease, color 120ms ease; }
         .cns-navbtn:hover { background-color: rgba(255,255,255,0.06); }
         .cns-lined {
-          background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, #E3E7E2 28px);
+          background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, #E7E2D2 28px);
           line-height: 28px;
         }
-        .cns-stamp { border-radius: 3px; transform: rotate(-0.5deg); }
+        .cns-stamp { border-radius: 4px; transform: rotate(-0.6deg); box-shadow: 0 1px 0 rgba(168,68,44,0.15); }
         .cns-chip { transition: border-color 120ms ease, color 120ms ease; }
         .cns-btn { transition: background-color 120ms ease, opacity 120ms ease; }
-        .cns-btn:hover:not(:disabled) { background-color: #26584D; }
-        .cns-row:hover { background-color: #F7F8F6; }
-        .cns-focus:focus-visible { outline: 2px solid #2E6B5E; outline-offset: 2px; }
+        .cns-btn:hover:not(:disabled) { background-color: ${colors.tealDeep}; }
+        .cns-row:hover { background-color: #FAF8F1; }
+        .cns-focus:focus-visible { outline: 2px solid ${colors.teal}; outline-offset: 2px; }
         .cns-shell { display: flex; min-height: 100vh; }
+        .cns-step-line { position: absolute; left: 5px; top: 14px; bottom: -18px; width: 1px; background: ${colors.line}; }
         @media (max-width: 760px) {
           .cns-shell { flex-direction: column; }
           .cns-sidebar { width: 100% !important; flex-direction: row !important; align-items: center; overflow-x: auto; }
           .cns-sidebar-section { display: none !important; }
+        }
+        @media print {
+          .cns-sidebar, .no-print { display: none !important; }
+          .cns-content-wrap { max-width: none !important; padding: 0 !important; }
+          body, .cns-paper-bg { background: #FFFFFF !important; }
+          .cns-report-sheet { border: none !important; padding: 0 !important; }
         }
       `}</style>
 
@@ -194,20 +605,25 @@ export default function App() {
         <div
           className="cns-sidebar"
           style={{
-            width: "220px",
+            width: "232px",
             flexShrink: 0,
             background: colors.ink,
             color: "#FFFFFF",
             display: "flex",
             flexDirection: "column",
-            padding: "18px 14px",
+            padding: "20px 14px",
           }}
         >
-          <div className="flex items-center gap-2 px-2" style={{ marginBottom: "22px" }}>
-            <Stethoscope size={18} style={{ color: "#7FB3A3" }} />
-            <span className="cns-serif" style={{ fontSize: "15px", fontWeight: 600 }}>
-              Chart Review
-            </span>
+          <div style={{ padding: "0 6px 16px 6px", marginBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.09)" }}>
+            <div className="flex items-center gap-2" style={{ marginBottom: "4px" }}>
+              <Stethoscope size={17} style={{ color: "#7FB3A3" }} />
+              <span className="cns-serif" style={{ fontSize: "14.5px", fontWeight: 600, letterSpacing: "0.2px" }}>
+                Sri Chaitanya Multispeciality
+              </span>
+            </div>
+            <p style={{ fontSize: "11px", color: colors.sidebarMuted, paddingLeft: "24px" }}>
+              Chart Review &middot; Bengaluru
+            </p>
           </div>
 
           <button
@@ -232,13 +648,13 @@ export default function App() {
           </button>
 
           <div className="cns-sidebar-section" style={{ marginTop: "20px" }}>
-            <p style={{ fontSize: "12px", color: colors.sidebarMuted, padding: "0 10px", marginBottom: "6px" }}>
-              Patients
+            <p style={{ fontSize: "11.5px", color: colors.sidebarMuted, padding: "0 10px", marginBottom: "8px" }}>
+              Patients under review
             </p>
             <div className="flex flex-col gap-1">
               {patients.map((p) => {
                 const r = results[p.id];
-                const dotColor = !r ? "#4C5A56" : r.flags?.length ? colors.rust : colors.teal;
+                const flagged = r?.flags?.length > 0;
                 const active = view === "patient" && activePatientId === p.id;
                 return (
                   <button
@@ -248,9 +664,9 @@ export default function App() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "9px",
-                      padding: "8px 10px",
-                      borderRadius: "5px",
+                      gap: "10px",
+                      padding: "7px 8px",
+                      borderRadius: "6px",
                       background: active ? "rgba(255,255,255,0.08)" : "none",
                       border: "none",
                       color: active ? "#FFFFFF" : colors.sidebarMuted,
@@ -259,8 +675,26 @@ export default function App() {
                       textAlign: "left",
                     }}
                   >
-                    <StatusDot color={dotColor} />
-                    {p.name}
+                    <span
+                      className="cns-serif"
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        background: flagged ? "rgba(168,68,44,0.22)" : "rgba(127,179,163,0.18)",
+                        color: flagged ? "#E39E8C" : "#9FD4C0",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {initialsOf(p.name)}
+                    </span>
+                    <span style={{ flex: 1 }}>{p.name}</span>
+                    {!r && <StatusDot color="#4C5A56" />}
                   </button>
                 );
               })}
@@ -272,13 +706,15 @@ export default function App() {
           </div>
         </div>
 
-        <div style={{ flex: 1, background: colors.paper, minWidth: 0 }}>
-          <div style={{ maxWidth: "1040px", margin: "0 auto", padding: "28px 32px" }}>
-            {view === "overview" ? (
+        <div className="cns-paper-bg" style={{ flex: 1, background: colors.paper, minWidth: 0 }}>
+          <div className="cns-content-wrap" style={{ maxWidth: "1040px", margin: "0 auto", padding: "28px 32px" }}>
+            {view === "report" && activePatient && activeResult ? (
+              <ReportView patient={activePatient} result={activeResult} onBack={() => setView("patient")} />
+            ) : view === "overview" ? (
               <>
                 <header style={{ marginBottom: "22px" }}>
-                  <h1 className="cns-serif" style={{ fontSize: "21px", fontWeight: 600 }}>
-                    Overview
+                  <h1 className="cns-serif" style={{ fontSize: "23px", fontWeight: 600 }}>
+                    Ward overview
                   </h1>
                   <p style={{ fontSize: "13px", color: colors.muted, marginTop: "3px" }}>
                     {analyzedCount === 0
@@ -290,29 +726,19 @@ export default function App() {
                 </header>
 
                 <div className="grid" style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "22px" }}>
-                  {[
-                    { label: "Patients", value: patients.length },
-                    { label: "Active flags", value: analyzedCount ? kpis.flagCount : "\u2014" },
-                    { label: "Care gaps found", value: analyzedCount ? kpis.gapCount : "\u2014" },
-                  ].map((k) => (
-                    <div
-                      key={k.label}
-                      style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "6px", padding: "16px 18px" }}
-                    >
-                      <p style={{ fontSize: "12px", color: colors.muted, marginBottom: "6px" }}>{k.label}</p>
-                      <p className="cns-serif" style={{ fontSize: "26px", fontWeight: 600 }}>
-                        {k.value}
-                      </p>
-                    </div>
-                  ))}
+                  <StatCard icon={Users} label="Patients" value={patients.length} tone="teal" />
+                  <StatCard icon={Flag} label="Active flags" value={analyzedCount ? kpis.flagCount : "—"} tone="rust" />
+                  <StatCard icon={ClipboardList} label="Care gaps found" value={analyzedCount ? kpis.gapCount : "—"} tone="amber" />
                 </div>
 
-                <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "6px", padding: "18px", marginBottom: "22px" }}>
-                  <p style={{ fontSize: "13px", fontWeight: 500, marginBottom: "12px" }}>Flags by patient</p>
+                <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "8px", padding: "18px", marginBottom: "22px" }}>
+                  <p className="cns-serif" style={{ fontSize: "14px", fontWeight: 600, marginBottom: "12px" }}>
+                    Flags by patient
+                  </p>
                   <div style={{ height: "180px" }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-                        <CartesianGrid stroke={colors.line} vertical={false} />
+                        <CartesianGrid stroke={colors.hairline} vertical={false} />
                         <XAxis dataKey="name" tick={{ fontSize: 12, fill: colors.muted }} axisLine={{ stroke: colors.line }} tickLine={false} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: colors.muted }} axisLine={false} tickLine={false} width={28} />
                         <Tooltip contentStyle={{ fontSize: "12px", border: `1px solid ${colors.line}`, borderRadius: "4px" }} />
@@ -322,7 +748,10 @@ export default function App() {
                   </div>
                 </div>
 
-                <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "6px", overflow: "hidden" }}>
+                <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "8px", overflow: "hidden" }}>
+                  <div style={{ padding: "14px 16px", borderBottom: `1px solid ${colors.line}` }}>
+                    <p className="cns-serif" style={{ fontSize: "14px", fontWeight: 600 }}>Patient register</p>
+                  </div>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${colors.line}` }}>
@@ -334,17 +763,59 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {patients.map((p) => {
+                      {patients.map((p, idx) => {
                         const r = results[p.id];
                         return (
-                          <tr key={p.id} className="cns-row" style={{ borderBottom: `1px solid ${colors.line}` }}>
-                            <td style={{ padding: "10px 16px" }}>{p.name}</td>
-                            <td style={{ padding: "10px 16px", color: colors.muted }}>{p.visits.length}</td>
-                            <td style={{ padding: "10px 16px", color: r?.flags?.length ? colors.rust : colors.muted }}>
-                              {r ? r.flags?.length ?? 0 : "\u2014"}
+                          <tr
+                            key={p.id}
+                            className="cns-row"
+                            style={{
+                              borderBottom: `1px solid ${colors.hairline}`,
+                              background: idx % 2 === 1 ? "#FBFAF4" : "transparent",
+                            }}
+                          >
+                            <td style={{ padding: "10px 16px" }}>
+                              <div className="flex items-center gap-2">
+                                <Seal name={p.name} size={26} tone={r?.flags?.length ? "rust" : "teal"} />
+                                {p.name}
+                              </div>
                             </td>
-                            <td style={{ padding: "10px 16px", color: r?.care_gaps?.length ? colors.amber : colors.muted }}>
-                              {r ? r.care_gaps?.length ?? 0 : "\u2014"}
+                            <td style={{ padding: "10px 16px", color: colors.muted }}>{p.visits.length}</td>
+                            <td style={{ padding: "10px 16px" }}>
+                              {r ? (
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    padding: "2px 9px",
+                                    borderRadius: "999px",
+                                    color: r.flags?.length ? colors.rust : colors.muted,
+                                    background: r.flags?.length ? colors.rustBg : colors.hairline,
+                                  }}
+                                >
+                                  {r.flags?.length ?? 0}
+                                </span>
+                              ) : (
+                                <span style={{ color: colors.faint }}>&mdash;</span>
+                              )}
+                            </td>
+                            <td style={{ padding: "10px 16px" }}>
+                              {r ? (
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    padding: "2px 9px",
+                                    borderRadius: "999px",
+                                    color: r.care_gaps?.length ? colors.amber : colors.muted,
+                                    background: r.care_gaps?.length ? colors.amberBg : colors.hairline,
+                                  }}
+                                >
+                                  {r.care_gaps?.length ?? 0}
+                                </span>
+                              ) : (
+                                <span style={{ color: colors.faint }}>&mdash;</span>
+                              )}
                             </td>
                             <td style={{ padding: "10px 16px", textAlign: "right" }}>
                               <button
@@ -352,7 +823,7 @@ export default function App() {
                                 onClick={() => openPatient(p.id)}
                                 style={{ fontSize: "13px", color: colors.teal, background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}
                               >
-                                Open
+                                Open chart
                               </button>
                             </td>
                           </tr>
@@ -367,38 +838,70 @@ export default function App() {
                 <button
                   className="cns-focus"
                   onClick={() => setView("overview")}
-                  style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: colors.muted, background: "none", border: "none", cursor: "pointer", marginBottom: "10px", padding: 0 }}
+                  style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "13px", color: colors.muted, background: "none", border: "none", cursor: "pointer", marginBottom: "12px", padding: 0 }}
                 >
                   <ChevronLeft size={14} />
                   Overview
                 </button>
 
-                <header className="flex items-center justify-between flex-wrap gap-2" style={{ marginBottom: "16px" }}>
-                  <h1 className="cns-serif" style={{ fontSize: "21px", fontWeight: 600 }}>
-                    {activePatient.name}
-                  </h1>
-                  <button
-                    className="cns-btn cns-focus"
-                    onClick={() => analyzePatient(activePatient)}
-                    disabled={loadingId === activePatient.id}
-                    style={{
-                      background: colors.teal,
-                      color: "#FFFFFF",
-                      border: "none",
-                      borderRadius: "5px",
-                      padding: "9px 15px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      cursor: loadingId === activePatient.id ? "default" : "pointer",
-                      opacity: loadingId === activePatient.id ? 0.8 : 1,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "7px",
-                    }}
-                  >
-                    {loadingId === activePatient.id && <Loader2 size={14} className="animate-spin" />}
-                    {activeResult ? "Re-analyze" : "Analyze visits"}
-                  </button>
+                <header className="flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: "18px" }}>
+                  <div className="flex items-center gap-3">
+                    <Seal name={activePatient.name} size={40} tone={activeResult?.flags?.length ? "rust" : "teal"} />
+                    <div>
+                      <h1 className="cns-serif" style={{ fontSize: "21px", fontWeight: 600, lineHeight: 1.15 }}>
+                        {activePatient.name}
+                      </h1>
+                      <p style={{ fontSize: "12px", color: colors.muted }}>
+                        {activePatient.visits.length} visits on file
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {activeResult && (
+                      <button
+                        className="cns-focus"
+                        onClick={() => setView("report")}
+                        style={{
+                          background: colors.panel,
+                          color: colors.teal,
+                          border: `1px solid ${colors.teal}`,
+                          borderRadius: "6px",
+                          padding: "9px 14px",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "7px",
+                        }}
+                      >
+                        <FileText size={14} />
+                        View report
+                      </button>
+                    )}
+                    <button
+                      className="cns-btn cns-focus"
+                      onClick={() => analyzePatient(activePatient)}
+                      disabled={loadingId === activePatient.id}
+                      style={{
+                        background: colors.teal,
+                        color: "#FFFFFF",
+                        border: "none",
+                        borderRadius: "6px",
+                        padding: "9px 16px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        cursor: loadingId === activePatient.id ? "default" : "pointer",
+                        opacity: loadingId === activePatient.id ? 0.8 : 1,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "7px",
+                      }}
+                    >
+                      {loadingId === activePatient.id && <Loader2 size={14} className="animate-spin" />}
+                      {activeResult ? "Re-analyze" : "Analyze visits"}
+                    </button>
+                  </div>
                 </header>
 
                 <div className="flex gap-2" style={{ marginBottom: "16px", flexWrap: "wrap" }}>
@@ -423,10 +926,65 @@ export default function App() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-5">
-                  <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "6px" }}>
-                    <div className="p-5">
-                      <div className="cns-lined" style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>
-                        {activePatient.visits[activeVisitIndex].text}
+                  <div className="flex flex-col gap-5">
+                    <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "8px", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          padding: "10px 16px",
+                          borderBottom: `1px solid ${colors.hairline}`,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                        }}
+                      >
+                        <span className="cns-serif" style={{ fontSize: "13px", fontWeight: 600, color: colors.tealDeep }}>
+                          OPD Case Sheet
+                        </span>
+                        <span style={{ fontSize: "11px", color: colors.faint }}>
+                          {activePatient.visits[activeVisitIndex].date}
+                        </span>
+                      </div>
+                      <div className="p-5">
+                        <div className="cns-lined" style={{ fontSize: "14px", whiteSpace: "pre-wrap" }}>
+                          {activePatient.visits[activeVisitIndex].text}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ background: colors.panel, border: `1px solid ${colors.line}`, borderRadius: "8px", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          padding: "10px 16px",
+                          borderBottom: `1px solid ${colors.hairline}`,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                        }}
+                      >
+                        <span className="cns-serif" style={{ fontSize: "13px", fontWeight: 600, color: colors.tealDeep }}>
+                          Extracted entities
+                        </span>
+                        <span style={{ fontSize: "11px", color: colors.faint }}>this visit</span>
+                      </div>
+                      <div className="p-5">
+                        {activeExtracted ? (
+                          <div className="flex flex-col gap-4">
+                            {ENTITY_CATEGORIES.map((cat) => (
+                              <EntityCategory
+                                key={cat.key}
+                                label={cat.label}
+                                Icon={cat.icon}
+                                color={cat.color}
+                                bg={cat.bg}
+                                items={activeExtracted[cat.key]}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: "13px", color: colors.muted }}>
+                            Run the analysis to see diagnoses, medications, labs, and key findings pulled out of this visit.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -445,9 +1003,7 @@ export default function App() {
                     {activeResult && (
                       <div className="flex flex-col gap-6">
                         <div>
-                          <h2 className="cns-serif" style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-                            Summary
-                          </h2>
+                          <SectionHeading>Clinical summary</SectionHeading>
                           <dl style={{ fontSize: "13px", lineHeight: 1.6 }}>
                             <dt style={{ color: colors.muted }}>Chief complaint</dt>
                             <dd style={{ marginBottom: "6px" }}>{activeResult.summary?.chief_complaint}</dd>
@@ -459,23 +1015,36 @@ export default function App() {
                         </div>
 
                         <div>
-                          <h2 className="cns-serif" style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-                            Timeline
-                          </h2>
-                          <div className="flex flex-col gap-2">
-                            {activeResult.timeline?.map((t, i) => (
-                              <div key={i} style={{ fontSize: "13px", display: "flex", gap: "10px" }}>
-                                <span style={{ color: colors.muted, minWidth: "78px" }}>{t.date}</span>
-                                <span>{t.summary}</span>
-                              </div>
-                            ))}
+                          <SectionHeading count={activeResult.timeline?.length ?? 0}>Visit timeline</SectionHeading>
+                          <div className="flex flex-col">
+                            {activeResult.timeline?.map((t, i) => {
+                              const isLast = i === activeResult.timeline.length - 1;
+                              return (
+                                <div key={i} style={{ display: "flex", gap: "12px", position: "relative", paddingBottom: isLast ? 0 : "16px" }}>
+                                  {!isLast && <span className="cns-step-line" />}
+                                  <span
+                                    style={{
+                                      width: 11,
+                                      height: 11,
+                                      borderRadius: "50%",
+                                      background: colors.teal,
+                                      marginTop: "3px",
+                                      flexShrink: 0,
+                                      zIndex: 1,
+                                    }}
+                                  />
+                                  <div>
+                                    <p style={{ fontSize: "12px", color: colors.muted, fontWeight: 500 }}>{t.date}</p>
+                                    <p style={{ fontSize: "13px", marginTop: "2px" }}>{t.summary}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
 
                         <div>
-                          <h2 className="cns-serif" style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-                            Flagged findings
-                          </h2>
+                          <SectionHeading count={activeResult.flags?.length ?? 0}>Flagged findings</SectionHeading>
                           {activeResult.flags?.length ? (
                             <div className="flex flex-col gap-3">
                               {activeResult.flags.map((f, i) => {
@@ -519,13 +1088,11 @@ export default function App() {
                         </div>
 
                         <div>
-                          <h2 className="cns-serif" style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-                            Care gaps
-                          </h2>
+                          <SectionHeading count={activeResult.care_gaps?.length ?? 0}>Care gaps</SectionHeading>
                           {activeResult.care_gaps?.length ? (
                             <div className="flex flex-col gap-2">
                               {activeResult.care_gaps.map((g, i) => (
-                                <div key={i} style={{ display: "flex", gap: "8px", fontSize: "13px", background: colors.amberBg, borderRadius: "4px", padding: "8px 10px" }}>
+                                <div key={i} style={{ display: "flex", gap: "8px", fontSize: "13px", background: colors.amberBg, borderRadius: "5px", padding: "9px 11px" }}>
                                   <ShieldAlert size={14} style={{ color: colors.amber, flexShrink: 0, marginTop: "1px" }} />
                                   <div>
                                     <span style={{ fontWeight: 500 }}>{g.gap}</span>

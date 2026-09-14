@@ -1,100 +1,112 @@
-"""Synthetic sample patients. Swap this for a real data source later -
-nothing else in the pipeline or API needs to change to do that.
+"""Synthetic sample patients, written as Indian OPD case sheets
+(K/C/O, O/E format) from a fictional Bengaluru hospital.
+Swap this for a real data source later - nothing else in the
+pipeline or API needs to change to do that.
 """
 
 PATIENTS = [
     {
-        "id": "alvarez",
-        "name": "R. Alvarez",
+        "id": "rao",
+        "name": "S. Rao",
         "visits": [
             {
                 "date": "Aug 2, 2026",
                 "text": (
-                    "Chief complaint: intermittent chest tightness, 3 days.\n\n"
-                    "History: 58-year-old presents with episodic substernal tightness, "
-                    "non-radiating, lasting 2-4 minutes, occurring with exertion and once "
-                    "at rest last night. No prior cardiac history. Denies shortness of "
-                    "breath, diaphoresis, or nausea. Takes lisinopril for hypertension.\n\n"
-                    "Exam: BP 148/92, HR 78, regular. Lungs clear. No peripheral edema.\n\n"
-                    "Labs: troponin 0.02 ng/mL (upper limit 0.04), drawn 6 hours after last "
-                    "episode. ECG shows normal sinus rhythm, no acute ST changes.\n\n"
-                    "Plan: outpatient stress test within one week, continue lisinopril, "
-                    "return immediately if symptoms recur or worsen."
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "K/C/O: Hypertension, on treatment.\n\n"
+                    "C/O: intermittent central chest tightness x 3 days.\n\n"
+                    "History: 58-year-old male presents with episodic substernal "
+                    "tightness, non-radiating, lasting 2-4 minutes, occurring on "
+                    "exertion and once at rest last night. No prior cardiac history. "
+                    "Denies breathlessness, sweating, or vomiting. On Tab. Amlong 5mg OD "
+                    "for hypertension.\n\n"
+                    "O/E: BP 148/92 mmHg, PR 78/min regular. Chest clear on "
+                    "auscultation. No pedal edema.\n\n"
+                    "Ix: Trop-I 0.02 ng/mL (ULN 0.04), drawn 6 hrs after last episode. "
+                    "ECG - NSR, no acute ST-T changes.\n\n"
+                    "Plan: TMT (treadmill test) OPD basis within one week, continue "
+                    "Tab. Amlong 5mg OD, review SOS if symptoms recur or worsen."
                 ),
             },
             {
                 "date": "Aug 9, 2026",
                 "text": (
-                    "Follow-up after outpatient stress test.\n\n"
-                    "Stress test shows mild inferior wall hypoperfusion of uncertain "
-                    "significance; overall test read as low-risk. Patient reports no "
-                    "further chest tightness since last visit. Continues lisinopril, "
-                    "blood pressure better controlled at 132/84 today.\n\n"
-                    "Plan: repeat imaging in 3 months if any recurrence of symptoms, "
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "F/U after TMT.\n\n"
+                    "TMT report: mild inferior wall hypoperfusion, significance "
+                    "uncertain; overall read as low-risk study. Patient reports no "
+                    "further chest tightness since last visit. Continues Tab. Amlong "
+                    "5mg OD, BP better controlled at 132/84 today.\n\n"
+                    "Plan: repeat cardiac work-up in 3 months if symptoms recur, "
                     "otherwise routine follow-up."
                 ),
             },
         ],
     },
     {
-        "id": "okafor",
-        "name": "T. Okafor",
+        "id": "fernandes",
+        "name": "A. Fernandes",
         "visits": [
             {
                 "date": "Jun 14, 2026",
                 "text": (
-                    "Chief complaint: routine follow-up, type 2 diabetes.\n\n"
-                    "History: 46-year-old here for scheduled diabetes follow-up. Reports "
-                    "good adherence to metformin. No polyuria, polydipsia, or vision "
-                    "changes. Last eye exam over 18 months ago. Diet mostly stable, "
-                    "occasional missed meals due to work schedule.\n\n"
-                    "Exam: weight stable since last visit. Feet exam normal, no ulcers or "
-                    "reduced sensation.\n\n"
-                    "Labs: HbA1c 7.1%, down from 7.6% three months ago. Lipid panel within "
-                    "target range.\n\n"
-                    "Plan: continue current metformin dose, recheck HbA1c in 3 months, "
-                    "reminder sent for overdue eye exam."
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "K/C/O: Type 2 Diabetes Mellitus.\n\n"
+                    "C/O: routine follow-up, T2DM.\n\n"
+                    "History: 46-year-old female here for scheduled diabetes review. "
+                    "Reports good compliance with Tab. Glycomet (metformin) 500mg BD. "
+                    "No polyuria, polydipsia, or visual disturbance. Last fundus exam "
+                    "over 18 months back. Diet mostly stable, occasional skipped meals "
+                    "due to work schedule.\n\n"
+                    "O/E: weight stable since last visit. Feet exam normal, no ulcers "
+                    "or reduced sensation.\n\n"
+                    "Ix: HbA1c 7.1%, down from 7.6% three months back. Lipid profile "
+                    "within target range.\n\n"
+                    "Plan: continue current Glycomet dose, repeat HbA1c in 3 months, "
+                    "reminder given for overdue fundus exam."
                 ),
             },
             {
                 "date": "Sep 20, 2026",
                 "text": (
-                    "Chief complaint: routine follow-up, type 2 diabetes.\n\n"
-                    "History: reports continued good adherence to metformin, no new "
-                    "symptoms. Eye exam still not completed - reports difficulty getting "
-                    "an appointment.\n\n"
-                    "Labs: HbA1c 6.9%, improved further.\n\n"
-                    "Plan: continue metformin, recheck HbA1c in 3 months, second reminder "
-                    "sent for overdue eye exam."
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "C/O: routine follow-up, T2DM.\n\n"
+                    "History: reports continued compliance with Glycomet, no new "
+                    "complaints. Fundus exam still not done - reports difficulty "
+                    "getting an appointment.\n\n"
+                    "Ix: HbA1c 6.9%, improved further.\n\n"
+                    "Plan: continue Glycomet, repeat HbA1c in 3 months, second reminder "
+                    "given for overdue fundus exam."
                 ),
             },
         ],
     },
     {
-        "id": "chen",
-        "name": "M. Chen",
+        "id": "krishnamurthy",
+        "name": "V. Krishnamurthy",
         "visits": [
             {
                 "date": "Jul 20, 2026",
                 "text": (
-                    "Post-operative day 10 after laparoscopic cholecystectomy.\n\n"
-                    "Incision sites healing well, no signs of infection. Mild intermittent "
-                    "right upper quadrant discomfort, tolerable. Denies fever, nausea, or "
-                    "jaundice.\n\n"
-                    "Plan: continue oral analgesics as needed, follow-up in 4 weeks with "
-                    "abdominal ultrasound if discomfort persists."
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "POD 10 after laparoscopic cholecystectomy.\n\n"
+                    "Port site wounds healing well, no signs of infection. Mild "
+                    "intermittent right hypochondrium discomfort, tolerable. Denies "
+                    "fever, vomiting, or yellowish discoloration of eyes.\n\n"
+                    "Plan: continue oral analgesics SOS, review in 4 weeks with USG "
+                    "abdomen if discomfort persists."
                 ),
             },
             {
                 "date": "Aug 24, 2026",
                 "text": (
-                    "Follow-up after laparoscopic cholecystectomy.\n\n"
-                    "Reports occasional right upper quadrant discomfort, milder than "
-                    "before. No fever, no jaundice. Follow-up ultrasound was not scheduled "
-                    "due to a scheduling backlog.\n\n"
-                    "Labs: ALT and AST mildly elevated compared to pre-operative baseline.\n\n"
-                    "Plan: repeat liver function tests in 2 weeks, expedite ultrasound "
-                    "scheduling."
+                    "Sri Chaitanya Multispeciality Hospital, Bengaluru - OPD Case Sheet\n\n"
+                    "F/U after laparoscopic cholecystectomy.\n\n"
+                    "Reports occasional right hypochondrium discomfort, milder than "
+                    "before. No fever, no jaundice. Follow-up USG was not scheduled due "
+                    "to a booking backlog.\n\n"
+                    "Ix: ALT and AST mildly elevated compared to pre-op baseline.\n\n"
+                    "Plan: repeat LFT in 2 weeks, expedite USG abdomen scheduling."
                 ),
             },
         ],

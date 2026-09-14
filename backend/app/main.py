@@ -1,4 +1,6 @@
-import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,20 +43,20 @@ def analyze_patient(patient_id: str):
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise HTTPException(
-            status_code=500,
-            detail="ANTHROPIC_API_KEY is not set. Add it to backend/.env and restart the server.",
-        )
-
     initial_state = {
         "patient_id": patient["id"],
         "patient_name": patient["name"],
         "visits": patient["visits"],
     }
-    result = pipeline.invoke(initial_state)
+    try:
+        result = pipeline.invoke(initial_state)
+    except RuntimeError as e:
+        # Raised by pipeline/llm.py when the local Ollama server isn't
+        # reachable or the configured model hasn't been pulled yet.
+        raise HTTPException(status_code=503, detail=str(e))
 
     return {
+        "extracted": result.get("extracted"),
         "summary": result.get("summary"),
         "timeline": result.get("timeline"),
         "timeline_graph": result.get("timeline_graph"),

@@ -1,8 +1,8 @@
 """Verifies the six-stage pipeline is wired correctly end to end.
 
-Mocks the LLM call so this runs without a real ANTHROPIC_API_KEY - it's
-checking the graph structure and data flow between stages, not the model's
-output quality.
+Mocks the LLM call so this runs without needing Ollama installed or
+running - it's checking the graph structure and data flow between stages,
+not the model's output quality.
 """
 
 from unittest.mock import patch
